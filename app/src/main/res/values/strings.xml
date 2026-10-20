@@ -1,0 +1,71 @@
+<resources>
+    <string name="app_name">The Display Solution</string>
+
+    <!-- The menu that holding Back for five seconds opens. -->
+    <string name="menu_title">%1$s %2$s · WebView %3$s</string>
+    <string name="menu_title_no_auto_start">%1$s %2$s · WebView %3$s · Auto-start off</string>
+    <string name="menu_reload">Reload player</string>
+    <string name="menu_check_update">Check for updates</string>
+    <string name="menu_pair_again">Pair this TV again</string>
+    <string name="menu_exit">Exit for 10 minutes</string>
+    <!-- With auto-start off nothing brings the player back: said in the menu, and asked once more. -->
+    <string name="menu_exit_for_good">Exit (it will not come back by itself)</string>
+    <string name="exit_for_good_title">Exit the player?</string>
+    <string name="exit_for_good_message">Auto-start is off on this TV, so the player will not come back by itself: the screen stays off the sign until somebody opens The Display Solution again.</string>
+    <string name="exit_for_good_confirm">Exit</string>
+    <string name="menu_allow_auto_start">Turn on auto-start (how to)</string>
+    <string name="menu_cancel">Cancel</string>
+
+    <string name="pair_again_title">Pair this TV again?</string>
+    <string name="pair_again_message">This TV stops playing and shows a new pairing code. In the dashboard, open Screens and use Replace device to connect it again.</string>
+    <string name="pair_again_confirm">Pair again</string>
+
+    <string name="auto_start_off">Auto-start is off on this TV. Hold Back for 5 seconds to turn it on.</string>
+    <!-- How to let the player come back by itself (MainActivity.showAutoStartHowTo): %1$s is this TV's address,
+         %2$s the app's package. -->
+    <string name="auto_start_title">Turn on auto-start</string>
+    <!-- A Fire TV has no setting for it (Fire OS 8): the computer steps alone. -->
+    <string name="auto_start_how_to_fire_tv">Auto-start needs the TV to let the player come to the front. A Fire TV allows it once from a computer on the same Wi-Fi:\n\n1. Settings › My Fire TV › About: press OK on the TV\'s name 7 times.\n2. Settings › My Fire TV › Developer Options › ADB Debugging: On.\n3. On the computer, run TheDisplaySolution-AutoStart.bat and type this TV\'s address: %1$s\n4. On the TV, tick Always allow and choose OK.\n5. When the computer says done, turn ADB Debugging off.\n\nOr with adb: adb connect %1$s, then adb shell appops set %2$s SYSTEM_ALERT_WINDOW allow</string>
+    <string name="auto_start_how_to">Auto-start needs the TV to let the player come to the front.\n\nChoose Open settings and turn it on for The Display Solution.\n\nA TV without that setting allows it once from a computer on the same Wi-Fi: turn on the TV\'s developer options and ADB debugging, run TheDisplaySolution-AutoStart.bat on the computer, type this TV\'s address, %1$s, and allow the computer on the TV.\n\nOr with adb: adb connect %1$s, then adb shell appops set %2$s SYSTEM_ALERT_WINDOW allow</string>
+    <string name="auto_start_no_address">(connect the TV to the network first)</string>
+    <string name="auto_start_open_settings">Open settings</string>
+    <string name="auto_start_close">Close</string>
+
+    <!-- Updates of the app (AppUpdater): the version the web app's Developer → TV App offers every TV. -->
+    <string name="update_checking">Checking for updates…</string>
+    <string name="update_newest">This TV has the newest version, %1$s.</string>
+    <string name="update_check_failed">Could not ask the server for updates. Check the TV\'s internet connection and try again.</string>
+    <string name="update_title">Update available</string>
+    <string name="update_message">Version %1$s is ready. This TV has %2$s.</string>
+    <string name="update_now">Update now</string>
+    <string name="update_later">Later</string>
+    <string name="update_allow_title">Allow updates</string>
+    <string name="update_allow_message">Android asks once on each TV before an app may install its own updates. On the next screen turn on Allow from this source, then come back here: the update carries on.</string>
+    <string name="update_allow_open">Open settings</string>
+    <string name="update_allow_steps">This TV keeps the switch elsewhere. In the TV\'s Settings, let %1$s install unknown apps:\n\nFire TV: My Fire TV › Developer Options › Install unknown apps. Developer Options appear after pressing OK on the TV\'s name in Settings › My Fire TV › About 7 times.\n\nOther TVs: Apps, or Privacy › Security and restrictions › Unknown sources.\n\nThen come back to the player: the update carries on by itself. You have 10 minutes before the player comes back to the front.</string>
+    <!-- Back from the TV's settings with the switch still off. -->
+    <string name="update_still_off_title">Install unknown apps is still off</string>
+    <string name="update_still_off_message">The update waits until %1$s may install unknown apps. Open the settings again, or cancel the update.</string>
+    <string name="update_already_downloading">An update is already downloading.</string>
+    <string name="update_downloading">Downloading version %1$s</string>
+    <string name="update_progress">%1$d of %2$d MB</string>
+    <string name="update_failed_title">The update did not work</string>
+    <string name="update_no_space">This TV does not have enough free space for the update: it needs %1$d MB.</string>
+    <string name="update_server_said">The server answered %1$d. Try again later.</string>
+    <string name="update_no_connection">The download stopped: check the TV\'s internet connection and try again.</string>
+    <string name="update_damaged">The file arrived damaged. Try again.</string>
+    <string name="update_cancelled">The update was cancelled.</string>
+    <string name="update_install_failed">The update could not be installed. %1$s</string>
+    <!-- What Android's installer refused, in words a person can act on (InstallResultReceiver). %1$s is Android's own words. -->
+    <string name="update_failed_conflict">This version was built with another key, so it cannot replace the app on this TV. Uninstall The Display Solution, then install this version.</string>
+    <string name="update_failed_incompatible">This version does not run on this TV.</string>
+    <string name="update_failed_storage">This TV does not have enough free space for the update.</string>
+    <string name="update_failed_invalid">The update file is damaged. Try again.</string>
+    <string name="update_failed_blocked">This TV does not allow the update.</string>
+    <string name="update_failed_other">The update could not be installed.</string>
+    <string name="update_android_said">Android said: %1$s</string>
+
+    <!-- The watchdog's foreground service has to carry a notification; a TV does not show it. -->
+    <string name="watchdog_channel">Player watchdog</string>
+    <string name="watchdog_notification">Keeping the player on the screen</string>
+</resources>

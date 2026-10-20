@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Lets the page hear the moment the line comes back (its "online" event) instead of on its next
+         30-second check. -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
+    <!-- The watchdog (Watchdog.kt): the player opens a minute after the TV starts, and a minute after it
+         crashed or somebody left it. -->
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+    <!-- "Display over other apps": from Android 10 on, the only way an app may bring itself back to the
+         screen from the background. Granted once per TV, by hand; the Back-hold menu shows how. -->
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <!-- Updates of the app itself (AppUpdater): Android still asks for a press on the TV, and once per TV for
+         "Install unknown apps". -->
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+
+    <uses-feature
+        android:name="android.hardware.touchscreen"
+        android:required="false" />
+    <uses-feature
+        android:name="android.software.leanback"
+        android:required="false" />
+
+    <!-- No backup of any kind, nor a copy to a new device: the TV's pairing token lives in the WebView's
+         storage, and restored onto a second set it would make two televisions one screen.
+         The icon, its round copy and Android TV's 320 x 180 banner are the owner's logo (2026-10-09), drawn by the web
+         repo's scripts/make-brand-icons.php. -->
+    <application
+        android:name=".PlayerApp"
+        android:allowBackup="false"
+        android:banner="@drawable/banner"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:label="@string/app_name"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.DisplaySolutionPlayer"
+        tools:targetApi="33">
+        <!-- configChanges: rotating, a resolution change or plugging in a keyboard must not
+             recreate the activity, which would reload the player and restart its content.
+             singleTask: the watchdog brings back the one player, never a second.
+             enableOnBackInvokedCallback="false": Back stays a key event, so holding it for five
+             seconds can open the menu (see targetSdk in build.gradle.kts). -->
+        <activity
+            android:name=".MainActivity"
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|density|keyboard|keyboardHidden|navigation|uiMode"
+            android:enableOnBackInvokedCallback="false"
+            android:exported="true"
+            android:launchMode="singleTask">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+                <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <service
+            android:name=".WatchdogService"
+            android:exported="false"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Digital signage: keeps a shop's player on its TV, and opens it again after a reboot or a crash" />
+        </service>
+
+        <!-- Not exported: only the system (boot, an update) and this app's own alarm may call it. -->
+        <receiver
+            android:name=".WatchdogReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+                <action android:name="android.intent.action.QUICKBOOT_POWERON" />
+            </intent-filter>
+        </receiver>
+
+        <!-- What Android's installer says about an update (AppUpdater): only its own PendingIntent reaches it. -->
+        <receiver
+            android:name=".InstallResultReceiver"
+            android:exported="false" />
+    </application>
+
+</manifest>

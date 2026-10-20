@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A debug build only: plain http to a server on this computer, reached from an emulator through adb reverse, so an
+     update can be tried against a local server (AppUpdater.setDebugOrigin). A release build has no such file. -->
+<network-security-config>
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="false">localhost</domain>
+        <domain includeSubdomains="false">10.0.2.2</domain>
+    </domain-config>
+</network-security-config>

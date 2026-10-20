@@ -1,0 +1,12 @@
+<resources>
+
+    <!-- Black from the first frame: the player page is black, so a TV never flashes white at start-up. Its dialogs are
+         dark too, whatever the TV's own setting: white words on them, and the blue of what the remote is on, read
+         across a room. -->
+    <style name="Theme.DisplaySolutionPlayer" parent="Theme.AppCompat.DayNight.NoActionBar">
+        <item name="android:windowBackground">@android:color/black</item>
+        <item name="alertDialogTheme">@style/ThemeOverlay.DisplaySolutionPlayer.Dialog</item>
+    </style>
+
+    <style name="ThemeOverlay.DisplaySolutionPlayer.Dialog" parent="Theme.AppCompat.Dialog.Alert" />
+</resources>
