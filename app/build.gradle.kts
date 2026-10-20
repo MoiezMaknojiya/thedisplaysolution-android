@@ -18,12 +18,12 @@ android {
         // apps targeting 37 also tighten how an activity may be started, which is what the watchdog does. Moving to
         // 37 means trying both again on an Android 17 device first.
         targetSdk = 36
-        // The first release, signed with the release key (owner, 2026-10-10: "isko v1 se hi start karo"): the 1.x
-        // builds before it were debug builds. Every update raises versionCode by one; Developer > TV App reads both.
-        // 1.1 (2026-10-20): the first update through the in-app updater, to try it on a real TV.
-        // 1.2 (2026-10-20): the updater asks whenever the player comes back to the front (Home and open again found none).
-        versionCode = 3
-        versionName = "1.2"
+        // The first release given to customers, signed with the release key (owner, 2026-10-20: "versioncode ko 1 kardo
+        // aur version ko 1.0 kar do phir mein sub customer ko dena shuru karta hu"). The 1.0 to 1.2 before it were tried
+        // on the owner's Fire Stick alone, to prove the in-app updater, and the 1.x builds before those were debug builds.
+        // Every update raises versionCode by one; Developer > TV App reads both.
+        versionCode = 1
+        versionName = "1.0"
     }
 
     buildTypes {
