@@ -20,7 +20,9 @@ import java.security.MessageDigest
 
 /**
  * Updates of the app itself (owner, 2026-10-10): the web app's Developer → TV App says which version every TV is offered,
- * at /player-app/latest.json. The player asks when it opens (at most once an hour) and once a day while it runs; a newer
+ * at /player-app/latest.json. The player asks whenever it comes to the front — opened, or back from Home or another app
+ * (owner, 2026-10-20: Home and open again found no update) — once ten minutes have passed since it last asked, and once a
+ * day while it stays in front; a newer
  * version is offered in a dialog (MainActivity), downloaded into the app's cache, checked against its size and SHA-256 and
  * handed to Android's PackageInstaller, which asks for one press on the TV — Android installs nothing without it. The
  * downloaded file is deleted the moment Android has its copy, and anything left from before when the player opens, so no
@@ -31,11 +33,20 @@ import java.security.MessageDigest
 object AppUpdater {
     const val ACTION_INSTALL_RESULT = "com.thedisplaysolution.player.action.INSTALL_RESULT"
 
-    /** Asked again at most this often when the player opens: a crash loop must not ask the server every minute. */
-    const val START_CHECK_EVERY_MS = 60 * 60_000L
+    /**
+     * Asked again at most this often when the player comes to the front: a crash loop, or the watchdog bringing the
+     * player back every minute, must not ask the server each time.
+     */
+    private const val ASK_AGAIN_AFTER_MS = 10 * 60_000L
 
-    /** While the player runs, and how long "Later" keeps the same version from being offered again. */
+    /** How often the server is asked while the player stays in front. */
     const val DAY_MS = 24 * 60 * 60_000L
+
+    /**
+     * How long "Later" keeps the same version from being offered by itself: a day less an hour, so the next day's look
+     * offers it again — a full day, counted from a moment after that look began, let it pass until the day after.
+     */
+    private const val LATER_MS = 23 * 60 * 60_000L
 
     private const val PREFS = "updates"
     private const val KEY_CHECKED_AT = "checked_at"
@@ -58,12 +69,13 @@ object AppUpdater {
 
     class UpdateException(message: String) : IOException(message)
 
-    /** Whether the server should be asked now that the player opens. */
-    fun dueOnStart(context: Context): Boolean {
+    /** How long until the server may be asked again, now that the player is in front: nought when it may be now. */
+    fun msUntilDue(context: Context): Long {
         val checkedAt = prefs(context).getLong(KEY_CHECKED_AT, 0L)
         val now = System.currentTimeMillis()
-        // A clock set back since makes it due too.
-        return checkedAt == 0L || now < checkedAt || now - checkedAt >= START_CHECK_EVERY_MS
+        // Never asked, or a clock set back since: now.
+        if (checkedAt == 0L || now < checkedAt) return 0L
+        return (ASK_AGAIN_AFTER_MS - (now - checkedAt)).coerceAtLeast(0L)
     }
 
     /** Blocking: what the server offers, compared with what this TV has. */
@@ -91,7 +103,7 @@ object AppUpdater {
         return if (offer.code > installedCode(context)) Check.Newer(offer) else Check.Current
     }
 
-    /** "Later": the same version is not offered by itself again for a day. */
+    /** "Later": the same version is not offered by itself again until the next day's look (LATER_MS). */
     fun postpone(context: Context, offer: Offer) {
         prefs(context).edit {
             putLong(KEY_LATER_CODE, offer.code)
@@ -103,7 +115,7 @@ object AppUpdater {
         val prefs = prefs(context)
         val at = prefs.getLong(KEY_LATER_AT, 0L)
         val now = System.currentTimeMillis()
-        return prefs.getLong(KEY_LATER_CODE, 0L) == offer.code && now >= at && now - at < DAY_MS
+        return prefs.getLong(KEY_LATER_CODE, 0L) == offer.code && now >= at && now - at < LATER_MS
     }
 
     /**

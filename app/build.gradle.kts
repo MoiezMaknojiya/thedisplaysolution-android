@@ -21,8 +21,9 @@ android {
         // The first release, signed with the release key (owner, 2026-10-10: "isko v1 se hi start karo"): the 1.x
         // builds before it were debug builds. Every update raises versionCode by one; Developer > TV App reads both.
         // 1.1 (2026-10-20): the first update through the in-app updater, to try it on a real TV.
-        versionCode = 2
-        versionName = "1.1"
+        // 1.2 (2026-10-20): the updater asks whenever the player comes back to the front (Home and open again found none).
+        versionCode = 3
+        versionName = "1.2"
     }
 
     buildTypes {

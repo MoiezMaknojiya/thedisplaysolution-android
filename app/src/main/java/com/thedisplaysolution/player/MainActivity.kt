@@ -73,7 +73,10 @@ private const val MIN_WEBVIEW_MAJOR = 80
 // The first look for an update once the player opens: after the page has had time to start.
 private const val FIRST_UPDATE_CHECK_MS = 30_000L
 
-// An update offered on a TV nobody is watching goes away by itself, as "Later".
+// Back in front with the page already running (from Home, another app, the TV's settings): a moment for the screen to settle.
+private const val BACK_UPDATE_CHECK_MS = 3_000L
+
+// An update offered on a TV nobody is watching goes away by itself after this long in front, as "Later".
 private const val OFFER_SHOWN_MS = 60_000L
 
 // How long after the page loads its script must have marked itself started (window.signagePlayerStarted).
@@ -101,6 +104,7 @@ class MainActivity : ComponentActivity() {
     private val checkStarted = Runnable { checkPlayerStarted() }
     private val retryPlayer = Runnable { webView?.loadUrl(PLAYER_URL) }
     private val dailyUpdateCheck = Runnable { checkForUpdate(byHand = false) }
+    private val offerWhatWasFound = Runnable { offerFoundWhileAway() }
 
     // The network and the installer, off the main thread: one job at a time.
     private val background = Executors.newSingleThreadExecutor()
@@ -117,6 +121,16 @@ class MainActivity : ComponentActivity() {
     // A download under way, and whether Cancel was pressed.
     private var downloading = false
     @Volatile private var downloadCancelled = false
+
+    // Whether this player has been in front before: the first time, the page is still starting.
+    private var inFrontBefore = false
+
+    // A newer version the server named while the player was not in front (Home pressed while it asked): offered on return.
+    private var foundWhileAway: AppUpdater.Offer? = null
+
+    // The minute an update offered by itself stays up. It counts only while the player is in front, so Home or the TV's
+    // settings never turn the offer into "Later" behind the person's back.
+    private var hideOffer: Runnable? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -160,7 +174,6 @@ class MainActivity : ComponentActivity() {
         // No update file stays on the TV: one left by a download cut short, or by a version installed since, goes now.
         AppUpdater.deleteLeftovers(this)
         AppUpdater.setDebugOrigin(this, intent.getStringExtra(EXTRA_UPDATE_ORIGIN))
-        handler.postDelayed(dailyUpdateCheck, if (AppUpdater.dueOnStart(this)) FIRST_UPDATE_CHECK_MS else AppUpdater.DAY_MS)
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -172,6 +185,9 @@ class MainActivity : ComponentActivity() {
         super.onStart()
         Watchdog.playerShown(this)
         WatchdogService.start(this)
+        // An update offered by itself has its whole minute again, now that somebody may see it.
+        hideOffer?.let { handler.postDelayed(it, OFFER_SHOWN_MS) }
+        planUpdateCheck()
     }
 
     override fun onResume() {
@@ -193,6 +209,10 @@ class MainActivity : ComponentActivity() {
 
     override fun onStop() {
         handler.removeCallbacks(openMenu)
+        // Away from the front nothing about updates runs: no look whose answer nobody sees, and an offer's minute waits.
+        handler.removeCallbacks(dailyUpdateCheck)
+        handler.removeCallbacks(offerWhatWasFound)
+        hideOffer?.let(handler::removeCallbacks)
         Watchdog.playerHidden(this)
         super.onStop()
     }
@@ -273,6 +293,27 @@ class MainActivity : ComponentActivity() {
 
     // ── Updates of the app (AppUpdater) ────────────────────────────────────────────────────────────────────────
 
+    /**
+     * In front: opened, back from Home or another app, or brought back by the watchdog. A version the server named while
+     * the player was away is offered now; otherwise the server is asked once ten minutes have passed since it last was
+     * (AppUpdater.msUntilDue — on a fresh start only after the page has started), then once a day while it stays in front.
+     */
+    private fun planUpdateCheck() {
+        val settle = if (inFrontBefore) BACK_UPDATE_CHECK_MS else FIRST_UPDATE_CHECK_MS
+        inFrontBefore = true
+        if (foundWhileAway != null) handler.postDelayed(offerWhatWasFound, settle)
+        handler.removeCallbacks(dailyUpdateCheck)
+        handler.postDelayed(dailyUpdateCheck, maxOf(settle, AppUpdater.msUntilDue(this)))
+    }
+
+    private fun offerFoundWhileAway() {
+        val offer = foundWhileAway ?: return
+        // Busy with something else on screen: kept for the next time the player comes to the front.
+        if (dialog?.isShowing == true || downloading || waitingToInstall != null) return
+        foundWhileAway = null
+        if (!AppUpdater.isPostponed(this, offer)) offerUpdate(offer, byHand = false)
+    }
+
     /** Ask the server, and offer a newer version. By hand it always answers; by itself it says nothing unless there is one. */
     private fun checkForUpdate(byHand: Boolean) {
         handler.removeCallbacks(dailyUpdateCheck)
@@ -287,8 +328,13 @@ class MainActivity : ComponentActivity() {
         runInBackground({ AppUpdater.check(applicationContext) }) { result ->
             when (result) {
                 is AppUpdater.Check.Newer -> {
-                    val free = lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED) && dialog?.isShowing != true
-                    if (free && (byHand || !AppUpdater.isPostponed(this, result.offer))) offerUpdate(result.offer, byHand)
+                    val inFront = lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)
+                    when {
+                        !byHand && AppUpdater.isPostponed(this, result.offer) -> Unit
+                        // The answer came after Home was pressed: offered the moment the player is back.
+                        !inFront -> foundWhileAway = result.offer
+                        dialog?.isShowing != true -> offerUpdate(result.offer, byHand)
+                    }
                 }
                 AppUpdater.Check.Current -> if (byHand) say(getString(R.string.update_newest, appVersion()))
                 AppUpdater.Check.Failed -> if (byHand) say(getString(R.string.update_check_failed))
@@ -305,19 +351,25 @@ class MainActivity : ComponentActivity() {
             .setPositiveButton(R.string.update_now) { _, _ -> startUpdate(offer) }
             .setNegativeButton(R.string.update_later) { _, _ -> AppUpdater.postpone(this, offer) }
             .setOnCancelListener { AppUpdater.postpone(this, offer) }
+            .setOnDismissListener {
+                hideOffer?.let(handler::removeCallbacks)
+                hideOffer = null
+            }
             .show()
             .forTheRoom()
             // A remote has no pointer: OK on it updates, without first finding a button.
             .also { it.getButton(DialogInterface.BUTTON_POSITIVE)?.requestFocus() }
         dialog = offered
-        // Nobody in front of the TV: it goes by itself, as Later — unless somebody asked for it.
+        // Nobody in front of the TV: after a minute in front it goes by itself, as Later — unless somebody asked for it.
         if (!byHand) {
-            handler.postDelayed({
+            val hide = Runnable {
                 if (offered.isShowing) {
                     AppUpdater.postpone(this, offer)
                     offered.dismiss()
                 }
-            }, OFFER_SHOWN_MS)
+            }
+            hideOffer = hide
+            handler.postDelayed(hide, OFFER_SHOWN_MS)
         }
     }
 
