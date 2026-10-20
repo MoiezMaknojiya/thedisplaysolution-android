@@ -22,8 +22,9 @@ import java.security.MessageDigest
  * Updates of the app itself (owner, 2026-10-10): the web app's Developer → TV App says which version every TV is offered,
  * at /player-app/latest.json. The player asks whenever it comes to the front — opened, or back from Home or another app
  * (owner, 2026-10-20: Home and open again found no update) — once ten minutes have passed since it last asked, and once a
- * day while it stays in front; a newer
- * version is offered in a dialog (MainActivity), downloaded into the app's cache, checked against its size and SHA-256 and
+ * day while it stays in front. A newer version is offered every time the player comes to the front, even after Later,
+ * which quiets only the player's own looks while it stays in front (MainActivity.planUpdateCheck). The version is
+ * offered in a dialog, downloaded into the app's cache, checked against its size and SHA-256 and
  * handed to Android's PackageInstaller, which asks for one press on the TV — Android installs nothing without it. The
  * downloaded file is deleted the moment Android has its copy, and anything left from before when the player opens, so no
  * APK stays in the TV's storage.
@@ -43,8 +44,9 @@ object AppUpdater {
     const val DAY_MS = 24 * 60 * 60_000L
 
     /**
-     * How long "Later" keeps the same version from being offered by itself: a day less an hour, so the next day's look
-     * offers it again — a full day, counted from a moment after that look began, let it pass until the day after.
+     * How long "Later" keeps the player's own looks, while it stays in front, from offering the same version: a day less
+     * an hour, so the next day's look offers it again — a full day, counted from a moment after that look began, let it
+     * pass until the day after. Coming back to the front offers it whatever Later said.
      */
     private const val LATER_MS = 23 * 60 * 60_000L
 
@@ -52,6 +54,7 @@ object AppUpdater {
     private const val KEY_CHECKED_AT = "checked_at"
     private const val KEY_LATER_CODE = "later_code"
     private const val KEY_LATER_AT = "later_at"
+    private const val KEY_OFFER = "offer"
     private const val KEY_DEBUG_ORIGIN = "debug_origin"
     private const val KEY_PROBLEM = "install_problem"
 
@@ -87,8 +90,11 @@ object AppUpdater {
             try {
                 when (connection.responseCode) {
                     HttpURLConnection.HTTP_OK -> parse(connection.inputStream.bufferedReader().use { it.readText() }, context.packageName)
-                    // No version uploaded yet: nothing to offer.
-                    HttpURLConnection.HTTP_NOT_FOUND -> return Check.Current
+                    // No version uploaded yet, or every one deleted: nothing to offer.
+                    HttpURLConnection.HTTP_NOT_FOUND -> {
+                        remember(context, null)
+                        return Check.Current
+                    }
                     else -> return Check.Failed
                 }
             } finally {
@@ -100,10 +106,46 @@ object AppUpdater {
             return Check.Failed
         } ?: return Check.Failed
 
-        return if (offer.code > installedCode(context)) Check.Newer(offer) else Check.Current
+        val newer = offer.code > installedCode(context)
+        remember(context, offer.takeIf { newer })
+        return if (newer) Check.Newer(offer) else Check.Current
     }
 
-    /** "Later": the same version is not offered by itself again until the next day's look (LATER_MS). */
+    /**
+     * The newer version the server named last, kept so the player can offer it each time it comes to the front without
+     * asking the server again within ten minutes — and after a restart too (a Fire TV ends a hidden app when it needs
+     * the memory). Null forgets it: the server named nothing newer.
+     */
+    private fun remember(context: Context, offer: Offer?) {
+        prefs(context).edit {
+            if (offer == null) {
+                remove(KEY_OFFER)
+            } else {
+                putString(KEY_OFFER, JSONObject()
+                    .put("package", context.packageName)
+                    .put("version_code", offer.code)
+                    .put("version_name", offer.name)
+                    .put("url", offer.url)
+                    .put("size", offer.size)
+                    .put("sha256", offer.sha256)
+                    .put("notes", offer.notes ?: JSONObject.NULL)
+                    .toString())
+            }
+        }
+    }
+
+    /** What the server named last, while it is still newer than the version on this TV. */
+    fun remembered(context: Context): Offer? {
+        val json = prefs(context).getString(KEY_OFFER, null) ?: return null
+        val offer = try {
+            parse(json, context.packageName)
+        } catch (e: JSONException) {
+            null
+        }
+        return offer?.takeIf { it.code > installedCode(context) }
+    }
+
+    /** "Later": the player's own looks while it stays in front leave the same version alone until the next day's (LATER_MS). */
     fun postpone(context: Context, offer: Offer) {
         prefs(context).edit {
             putLong(KEY_LATER_CODE, offer.code)
