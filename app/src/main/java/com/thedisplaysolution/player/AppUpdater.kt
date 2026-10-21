@@ -27,7 +27,8 @@ import java.security.MessageDigest
  * offered in a dialog, downloaded into the app's cache, checked against its size and SHA-256 and
  * handed to Android's PackageInstaller, which asks for one press on the TV — Android installs nothing without it. The
  * downloaded file is deleted the moment Android has its copy, and anything left from before when the player opens, so no
- * APK stays in the TV's storage.
+ * APK stays in the TV's storage. A copy a store installed (storeThatInstalled) is the store's to update, and none of this
+ * runs for it.
  *
  * Everything here but the preferences runs off the main thread.
  */
@@ -60,6 +61,12 @@ object AppUpdater {
 
     private const val FOLDER = "update"
     private const val TIMEOUT_MS = 15_000
+
+    /** The stores that update their own copies, by the installer package Android names, with the words for the TV. */
+    private val STORES = mapOf(
+        "com.amazon.venezia" to "the Amazon Appstore",
+        "com.android.vending" to "Google Play",
+    )
 
     /** What the server offers. */
     data class Offer(val code: Long, val name: String, val url: String, val size: Long, val sha256: String, val notes: String?)
@@ -271,6 +278,26 @@ object AppUpdater {
         } finally {
             apk.delete()
         }
+    }
+
+    /**
+     * The store this copy came from, by name, or null for one installed from the website (or updated by this app, which
+     * is then its installer). A store signs the app with a key of its own — Amazon re-signs every app with one for the
+     * developer's account — so a version from the website could never install over its copy, and the store keeps its
+     * copy up to date anyway (owner, 2026-10-21: "Amazon khud kare"): such a copy never offers an update itself.
+     */
+    fun storeThatInstalled(context: Context): String? {
+        val installer = try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                context.packageManager.getInstallSourceInfo(context.packageName).installingPackageName
+            } else {
+                @Suppress("DEPRECATION")
+                context.packageManager.getInstallerPackageName(context.packageName)
+            }
+        } catch (e: PackageManager.NameNotFoundException) {
+            null
+        }
+        return STORES[installer]
     }
 
     /** Any update file left in the cache: a download cut short, or a version installed since. */

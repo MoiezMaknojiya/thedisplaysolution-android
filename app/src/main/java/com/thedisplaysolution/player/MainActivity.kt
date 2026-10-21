@@ -56,6 +56,10 @@ import java.util.concurrent.RejectedExecutionException
 internal const val PLAYER_ORIGIN = "https://sign.thedisplaysolution.com"
 private const val PLAYER_URL = "$PLAYER_ORIGIN/player"
 
+// Where the privacy policy is read, as the menu says it: a TV has no browser to open it in (owner, 2026-10-21, for the
+// Amazon Appstore, which asks for the policy inside the app as well as on its page).
+private const val PRIVACY_ADDRESS = "sign.thedisplaysolution.com/privacy"
+
 // The same pause the player page itself takes before trying the server again.
 private const val RETRY_DELAY_MS = 10_000L
 
@@ -260,6 +264,7 @@ class MainActivity : ComponentActivity() {
             add(getString(R.string.menu_pair_again) to { confirmPairAgain() })
             add(getString(if (autoStart) R.string.menu_exit else R.string.menu_exit_for_good) to { exitForAWhile() })
             if (!autoStart) add(getString(R.string.menu_allow_auto_start) to { showAutoStartHowTo() })
+            add(getString(R.string.menu_privacy) to { say(getString(R.string.privacy_message, PRIVACY_ADDRESS), R.string.privacy_title) })
             add(getString(R.string.menu_cancel) to { })
         }
         val title = if (autoStart) R.string.menu_title else R.string.menu_title_no_auto_start
@@ -306,6 +311,8 @@ class MainActivity : ComponentActivity() {
     private fun planUpdateCheck() {
         val settle = if (inFrontBefore) BACK_UPDATE_CHECK_MS else FIRST_UPDATE_CHECK_MS
         inFrontBefore = true
+        // A store's copy is the store's to update (AppUpdater.storeThatInstalled).
+        if (AppUpdater.storeThatInstalled(this) != null) return
         handler.removeCallbacks(dailyUpdateCheck)
         handler.removeCallbacks(returnUpdateCheck)
         handler.removeCallbacks(offerWhatIsKnown)
@@ -327,6 +334,11 @@ class MainActivity : ComponentActivity() {
     /** Ask the server, and offer a newer version. By hand it always answers; by itself it says nothing unless there is one. */
     private fun checkForUpdate(look: Look) {
         val byHand = look == Look.BY_HAND
+        // The website's version could never install over a store's copy, which the store keeps up to date: said, not offered.
+        AppUpdater.storeThatInstalled(this)?.let { store ->
+            if (byHand) say(getString(R.string.update_from_store, store))
+            return
+        }
         handler.removeCallbacks(dailyUpdateCheck)
         handler.postDelayed(dailyUpdateCheck, AppUpdater.DAY_MS)
         if (downloading) {

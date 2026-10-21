@@ -14,7 +14,12 @@
     <string name="exit_for_good_message">Auto-start is off on this TV, so the player will not come back by itself: the screen stays off the sign until somebody opens The Display Solution again.</string>
     <string name="exit_for_good_confirm">Exit</string>
     <string name="menu_allow_auto_start">Turn on auto-start (how to)</string>
+    <string name="menu_privacy">Privacy policy</string>
     <string name="menu_cancel">Cancel</string>
+
+    <!-- %1$s is the policy's address: a TV has no browser, so it is read on a phone or a computer. -->
+    <string name="privacy_title">Privacy policy</string>
+    <string name="privacy_message">What this app sends to the server, and why, is in the privacy policy:\n\n%1$s\n\nOpen it on a phone or a computer.</string>
 
     <string name="pair_again_title">Pair this TV again?</string>
     <string name="pair_again_message">This TV stops playing and shows a new pairing code. In the dashboard, open Screens and use Replace device to connect it again.</string>
@@ -34,6 +39,8 @@
     <!-- Updates of the app (AppUpdater): the version the web app's Developer → TV App offers every TV. -->
     <string name="update_checking">Checking for updates…</string>
     <string name="update_newest">This TV has the newest version, %1$s.</string>
+    <!-- A store's copy (AppUpdater.storeThatInstalled): %1$s is the store, "the Amazon Appstore" or "Google Play". -->
+    <string name="update_from_store">This TV got the app from %1$s, which keeps it up to date.</string>
     <string name="update_check_failed">Could not ask the server for updates. Check the TV\'s internet connection and try again.</string>
     <string name="update_title">Update available</string>
     <string name="update_message">Version %1$s is ready. This TV has %2$s.</string>
