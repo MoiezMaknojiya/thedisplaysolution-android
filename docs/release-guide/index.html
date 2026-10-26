@@ -141,8 +141,7 @@ versionName = "1.1"    // what the TV and the stores show</code></pre>
         <figure><img src="img/as-5-play.jpg" width="598" height="547" loading="lazy"
           alt="The last step: playRelease selected in the Build Variants list, and Create marked in red."></figure></li>
       <li>When the build ends, Android Studio shows a message at the bottom right. Click its <strong>locate</strong> link: Windows
-        opens the folder with the file <code>app-play-release.aab</code>, inside the project's <code>app</code> folder
-        (<code>app\playRelease</code> or <code>app\play\release</code>, depending on the Android Studio version).
+        opens the folder with the file: <code>app\play\release\app-play-release.aab</code> inside the project.
         This is the file you upload to Google Play (<a href="#play">step 7</a>).</li>
     </ol>
   </section>
@@ -159,7 +158,7 @@ versionName = "1.1"    // what the TV and the stores show</code></pre>
         <figure><img src="img/as-5-site.jpg" width="598" height="547" loading="lazy"
           alt="The last step: siteRelease selected in the Build Variants list, and Create marked in red."></figure></li>
       <li>Click <strong>locate</strong> in the message at the bottom right: the file is <code>app-site-release.apk</code>, inside the
-        project's <code>app</code> folder. Upload this one file to the website (<a href="#website">step 5</a>) and to Amazon
+        project's <code>app\site\release</code> folder. Upload this one file to the website (<a href="#website">step 5</a>) and to Amazon
         (<a href="#amazon">step 6</a>).</li>
     </ol>
   </section>
@@ -232,8 +231,9 @@ gradlew lintSiteDebug lintPlayDebug assembleSiteRelease bundlePlayRelease</code>
         </ul></li>
       <li>Click <strong>Create new release</strong>. Upload <code>app-play-release.aab</code>, write the release notes, then
         click <strong>Next</strong>.
-        <p class="note">On the very first upload, Play asks about app signing. Keep <strong>Use Google-generated key</strong>.
-          Google then keeps the app's signing key, and the release key becomes the upload key.</p></li>
+        <p class="note">Google signs the app on Play with a key of its own (Play App Signing), and the release key is the upload key.
+          Play's <strong>automatic protection</strong> is turned off for this app on purpose (2026-10-26): it needs Android 7 or newer,
+          and the app supports Android 6. Leave it off, or the upload is refused.</p></li>
       <li>Click <strong>Save</strong>, then <strong>Review release</strong>, then <strong>Start rollout</strong>.
         When Google approves it, every Play copy updates by itself.</li>
     </ol>
