@@ -1,0 +1,273 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Releasing the TV App · The Display Solution</title>
+<style>
+  :root {
+    --bg: #f5f6f8; --card: #ffffff; --text: #1f2430; --muted: #556070; --line: #dfe3ea;
+    --brand: #2563eb; --red: #e50914; --code-bg: #eef1f6; --note-bg: #fff7e6; --note-line: #f1b44c;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #111318; --card: #1a1d24; --text: #e7e9ee; --muted: #a3acbb; --line: #2c313b;
+      --brand: #6b9bff; --code-bg: #242833; --note-bg: #2a2416; --note-line: #b8862f; }
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  a { color: var(--brand); text-underline-offset: 2px; }
+  a:focus-visible { outline: 3px solid var(--brand); outline-offset: 2px; border-radius: 3px; }
+  .skip { position: absolute; left: -999px; top: 8px; background: var(--card); padding: 8px 12px; border-radius: 6px; }
+  .skip:focus { left: 16px; }
+  header { background: var(--card); border-bottom: 1px solid var(--line); }
+  header .wrap { padding-top: 28px; padding-bottom: 24px; }
+  .wrap { max-width: 920px; margin: 0 auto; padding: 0 16px; }
+  h1 { margin: 0 0 6px; font-size: 1.9rem; line-height: 1.25; }
+  .lead { margin: 0; color: var(--muted); max-width: 70ch; }
+  nav.toc { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 16px 20px; margin: 24px 0; }
+  nav.toc h2 { font-size: 1rem; margin: 0 0 8px; }
+  nav.toc ol { margin: 0; padding-left: 22px; }
+  nav.toc li { margin: 4px 0; }
+  section.part { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 24px 24px 8px; margin: 24px 0; }
+  section.part > h2 { margin: 0 0 4px; font-size: 1.45rem; line-height: 1.3; }
+  section.part > p.sub { margin: 0 0 16px; color: var(--muted); }
+  h3 { font-size: 1.1rem; margin: 28px 0 8px; }
+  p, li { max-width: 75ch; }
+  ol.steps { padding-left: 0; list-style: none; counter-reset: step; margin: 0; }
+  ol.steps > li { counter-increment: step; position: relative; padding-left: 44px; margin: 0 0 20px; max-width: none; }
+  ol.steps > li::before { content: counter(step); position: absolute; left: 0; top: 0; width: 30px; height: 30px; border-radius: 50%;
+    background: var(--brand); color: #fff; font-weight: 700; font-size: .9rem; display: grid; place-items: center; }
+  figure { margin: 12px 0 4px; }
+  figure img { display: block; max-width: 100%; height: auto; border: 1px solid var(--line); border-radius: 8px; }
+  figcaption { font-size: .9rem; color: var(--muted); margin-top: 6px; }
+  .red { color: var(--red); font-weight: 700; }
+  code, kbd { font-family: ui-monospace, "Cascadia Code", Consolas, monospace; font-size: .9em; background: var(--code-bg); padding: 1px 6px; border-radius: 4px; overflow-wrap: anywhere; }
+  pre { background: var(--code-bg); padding: 12px 14px; border-radius: 8px; overflow-x: auto; font-size: .88rem; line-height: 1.5; }
+  pre code { background: none; padding: 0; }
+  .note { background: var(--note-bg); border-left: 4px solid var(--note-line); border-radius: 6px; padding: 10px 14px; margin: 12px 0; max-width: 75ch; }
+  .table { overflow-x: auto; margin: 12px 0 20px; }
+  table { border-collapse: collapse; width: 100%; min-width: 560px; font-size: .95rem; }
+  th, td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; vertical-align: top; }
+  th { background: var(--code-bg); }
+  td code { white-space: nowrap; overflow-wrap: normal; }
+  footer { color: var(--muted); font-size: .9rem; padding: 8px 0 40px; }
+  @media (max-width: 600px) { section.part { padding: 18px 16px 4px; } h1 { font-size: 1.5rem; } ol.steps > li { padding-left: 38px; } }
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to the guide</a>
+<header>
+  <div class="wrap">
+    <h1>Releasing the TV app</h1>
+    <p class="lead">How to build a new version of <strong>The Display Solution</strong> TV player
+      (<code>com.thedisplaysolution.player</code>) and publish it on the website, the Amazon Appstore and Google Play.
+      In every picture, the <span class="red">red box</span> is what you click, and its number is the step.</p>
+  </div>
+</header>
+
+<main id="main" class="wrap" tabindex="-1">
+  <nav class="toc" aria-labelledby="toc-title">
+    <h2 id="toc-title">Contents</h2>
+    <ol>
+      <li><a href="#before">Before you start</a></li>
+      <li><a href="#version">Raise the version</a></li>
+      <li><a href="#aab">Build the Google Play file (AAB)</a></li>
+      <li><a href="#apk">Build the website and Amazon file (APK)</a></li>
+      <li><a href="#website">Publish on the website</a></li>
+      <li><a href="#amazon">Publish on the Amazon Appstore</a></li>
+      <li><a href="#play">Publish on Google Play</a></li>
+      <li><a href="#access">Give a new developer access</a></li>
+    </ol>
+  </nav>
+
+  <section class="part" id="before" aria-labelledby="before-title">
+    <h2 id="before-title">1. Before you start</h2>
+    <p class="sub">There are two builds of the one app.</p>
+    <div class="table">
+      <table>
+        <thead><tr><th>Build</th><th>Goes to</th><th>File</th><th>Updates itself?</th></tr></thead>
+        <tbody>
+          <tr><td><code>playRelease</code></td><td>Google Play</td><td>AAB (<code>.aab</code>)</td><td>No. Google Play updates it.</td></tr>
+          <tr><td><code>siteRelease</code></td><td>The website and the Amazon Appstore</td><td>APK (<code>.apk</code>)</td><td>Yes, from the website. A copy from the Amazon Appstore is updated by Amazon.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <ul>
+      <li><strong>The release key</strong> is <code>D:\Keys\the-display-solution-release.jks</code>. Its passwords belong to the owner.
+        Ask the owner for them, and never put them in git, a chat or an email.</li>
+      <li>Every file must be signed with this same key. A TV that has the app accepts an update only from the same key.</li>
+      <li>Open the project in Android Studio: <code>D:\AndroidStudioProjects\TheDisplaySolutionPlayer</code>.</li>
+    </ul>
+  </section>
+
+  <section class="part" id="version" aria-labelledby="version-title">
+    <h2 id="version-title">2. Raise the version</h2>
+    <p class="sub">Every new release needs a higher version code. A store refuses a code it has seen, and a TV installs nothing older.</p>
+    <p>In <code>app/build.gradle.kts</code>, raise <code>versionCode</code> by exactly one, and change <code>versionName</code>
+      to the name people read:</p>
+<pre><code>versionCode = 2        // was 1: always +1
+versionName = "1.1"    // what the TV and the stores show</code></pre>
+    <p>Then press <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>O</kbd> (Sync Project with Gradle Files), and commit:
+      <code>Version 1.1 (versionCode 2): what changed</code>.</p>
+  </section>
+
+  <section class="part" id="aab" aria-labelledby="aab-title">
+    <h2 id="aab-title">3. Build the Google Play file (AAB)</h2>
+    <p class="sub">Android Studio's signing wizard. It takes about a minute.</p>
+    <ol class="steps">
+      <li>Click the <strong>main menu</strong> (the three lines at the top left).
+        <figure><img src="img/as-1-menu.jpg" width="900" height="220" loading="lazy"
+          alt="Android Studio's top bar, with a red box round the three-line main menu button at the top left."></figure></li>
+      <li>Click <strong>Build</strong>, then <strong>Generate Signed App Bundle or APK…</strong> (box 3).
+        <figure><img src="img/as-2-build.jpg" width="960" height="460" loading="lazy"
+          alt="The Build menu open. Red boxes on Build, and on Generate Signed App Bundle or APK."></figure></li>
+      <li>Choose <strong>Android App Bundle</strong> (box 4), then click <strong>Next</strong> (box 5).
+        <figure><img src="img/as-3-aab.jpg" width="598" height="547" loading="lazy"
+          alt="The first step of the wizard, with Android App Bundle chosen and Next marked in red."></figure></li>
+      <li>Check the key:
+        <ul>
+          <li><strong>Key store path</strong> (box 6) is <code>D:\Keys\the-display-solution-release.jks</code>.
+            If it is empty, click <strong>Choose existing…</strong> and pick that file.</li>
+          <li>Type the <strong>Key store password</strong> and the <strong>Key password</strong> (box 7).
+            <strong>Key alias</strong> is <code>thedisplaysolution</code>.</li>
+          <li>Click <strong>Next</strong> (box 8).</li>
+        </ul>
+        <figure><img src="img/as-4-key.jpg" width="598" height="547" loading="lazy"
+          alt="The key step: red boxes on the key store path, on the two password fields (hidden in this picture), and on Next."></figure>
+        <p class="note">The password fields are covered in this picture. Only the owner knows the passwords.</p></li>
+      <li>Click <strong>playRelease</strong> (box 9), so that only that row is selected, then click <strong>Create</strong> (box 10).
+        <figure><img src="img/as-5-play.jpg" width="598" height="547" loading="lazy"
+          alt="The last step: playRelease selected in the Build Variants list, and Create marked in red."></figure></li>
+      <li>When the build ends, Android Studio shows a message at the bottom right. Click its <strong>locate</strong> link: Windows
+        opens the folder with the file <code>app-play-release.aab</code>, inside the project's <code>app</code> folder
+        (<code>app\playRelease</code> or <code>app\play\release</code>, depending on the Android Studio version).
+        This is the file you upload to Google Play (<a href="#play">step 7</a>).</li>
+    </ol>
+  </section>
+
+  <section class="part" id="apk" aria-labelledby="apk-title">
+    <h2 id="apk-title">4. Build the website and Amazon file (APK)</h2>
+    <p class="sub">The same wizard, with two changes.</p>
+    <ol class="steps">
+      <li>Open the wizard as in steps 1 and 2 above. Choose <strong>APK</strong> (box 4), then click <strong>Next</strong> (box 5).
+        <figure><img src="img/as-3-apk.jpg" width="598" height="547" loading="lazy"
+          alt="The first step of the wizard, with APK chosen and Next marked in red."></figure></li>
+      <li>Fill in the key the same way, then click <strong>Next</strong>.</li>
+      <li>Click <strong>siteRelease</strong> (box 9), then click <strong>Create</strong> (box 10).
+        <figure><img src="img/as-5-site.jpg" width="598" height="547" loading="lazy"
+          alt="The last step: siteRelease selected in the Build Variants list, and Create marked in red."></figure></li>
+      <li>Click <strong>locate</strong> in the message at the bottom right: the file is <code>app-site-release.apk</code>, inside the
+        project's <code>app</code> folder. Upload this one file to the website (<a href="#website">step 5</a>) and to Amazon
+        (<a href="#amazon">step 6</a>).</li>
+    </ol>
+  </section>
+
+  <section class="part" id="website" aria-labelledby="website-title">
+    <h2 id="website-title">5. Publish on the website</h2>
+    <p class="sub">Every TV that installed the app from the website is then offered the update.</p>
+    <ol class="steps">
+      <li>Sign in at <a href="https://sign.thedisplaysolution.com">sign.thedisplaysolution.com</a> as the super admin, and open
+        <strong>Developer</strong> (box 1). Only the Super-Admin role has this page.</li>
+      <li>Drop <code>app-site-release.apk</code> on the <strong>App file</strong> box, or click <em>choose a file</em> (box 2).
+        The page reads the version from the file.</li>
+      <li>Write a sentence or two under <strong>What's new</strong> (box 3). The TV shows it with the update.</li>
+      <li>Click <strong>Publish Version</strong> (box 4).
+        <figure><img src="img/web-developer.jpg" width="1568" height="670" loading="lazy"
+          alt="The website's Developer page: red boxes on Developer in the sidebar, the App file box, What's new and Publish Version."></figure></li>
+    </ol>
+    <p>The new version appears at the top of <strong>Versions</strong> as "Offered to TVs". Each TV offers "Update available"
+      the next time it comes to the front. Android asks for one press on the TV to install it.</p>
+  </section>
+
+  <section class="part" id="amazon" aria-labelledby="amazon-title">
+    <h2 id="amazon-title">6. Publish on the Amazon Appstore</h2>
+    <p class="sub">Fire TV gets the app here. Amazon reviews each version, usually within a few days.</p>
+    <ol class="steps">
+      <li>Open <a href="https://developer.amazon.com/apps-and-games/console/apps/list.html">the Amazon Developer Console</a>.
+        On <strong>The Display Solution</strong>, click the menu icon (box 1), then <strong>Add Upcoming Version</strong> (box 2).
+        <figure><img src="img/amz-upcoming.jpg" width="1150" height="559" loading="lazy"
+          alt="Amazon's App List: red boxes on the app's menu icon and on Add Upcoming Version."></figure></li>
+      <li>Under <strong>App Files</strong>, upload the same <code>app-site-release.apk</code>.
+        Keep the devices as they are: Fire TV only, no tablets.</li>
+      <li>In the listing, change only what changed: <strong>What's new</strong>, and screenshots if the look changed.</li>
+      <li>Paste the reviewer's testing instructions again just before <strong>Submit</strong>. The console forgets them when you leave
+        that step. Ask the owner for the text and the test account.</li>
+      <li>Click <strong>Submit</strong>. When Amazon approves it, every Appstore copy updates by itself.</li>
+    </ol>
+  </section>
+
+  <section class="part" id="play" aria-labelledby="play-title">
+    <h2 id="play-title">7. Publish on Google Play</h2>
+    <p class="sub">Android TV and Google TV get the app here. Google reviews each release.</p>
+    <ol class="steps">
+      <li>Open <a href="https://play.google.com/console">Play Console</a> → <strong>The Display Solution</strong> →
+        <strong>Test and release</strong> (the rocket, box 1).
+        <figure><img src="img/play-test.jpg" width="1568" height="592" loading="lazy"
+          alt="Play Console's Test and release page: red boxes on the rocket icon and on Closed testing's Get started."></figure></li>
+      <li>Choose the track:
+        <ul>
+          <li><strong>Closed testing</strong> (box 2) until Production is unlocked. A new personal account needs 12 testers
+            opted in for 14 days in a row first.</li>
+          <li><strong>Production</strong> after that.</li>
+        </ul></li>
+      <li>Click <strong>Create new release</strong>. Upload <code>app-play-release.aab</code>, write the release notes, then
+        click <strong>Next</strong>.
+        <p class="note">On the very first upload, Play asks about app signing. Keep <strong>Use Google-generated key</strong>.
+          Google then keeps the app's signing key, and the release key becomes the upload key.</p></li>
+      <li>Click <strong>Save</strong>, then <strong>Review release</strong>, then <strong>Start rollout</strong>.
+        When Google approves it, every Play copy updates by itself.</li>
+    </ol>
+  </section>
+
+  <section class="part" id="access" aria-labelledby="access-title">
+    <h2 id="access-title">8. Give a new developer access</h2>
+    <p class="sub">Give each person their own login, never a shared password, and remove the access when they leave.</p>
+
+    <h3>Google Play Console</h3>
+    <ol class="steps">
+      <li>Open <a href="https://play.google.com/console">Play Console</a> → <strong>Users and permissions</strong>, then click
+        <strong>Invite new users</strong> (box 1).
+        <figure><img src="img/play-users.jpg" width="1228" height="410" loading="lazy"
+          alt="Play Console's Users and permissions page with Invite new users marked in red."></figure></li>
+      <li>Type their email address. Under <strong>App permissions</strong>, add <em>The Display Solution</em>, and give:
+        <ul>
+          <li>Release to production, exclude devices, and use Play App Signing</li>
+          <li>Release apps to testing tracks</li>
+          <li>Manage testing tracks and edit tester lists</li>
+          <li>Edit store listing, pricing and distribution</li>
+          <li>View app information</li>
+        </ul>
+        Do not give <em>Admin (all permissions)</em>: it lets them invite or remove people.</li>
+      <li>Click <strong>Invite user</strong>. They accept the email with the same address.</li>
+    </ol>
+
+    <h3>Amazon Developer Console</h3>
+    <ol class="steps">
+      <li>Open <strong>My Settings</strong> (box 1), then <strong>User Permissions</strong> (box 2).
+        <figure><img src="img/amz-settings.jpg" width="1150" height="360" loading="lazy"
+          alt="Amazon's My Settings menu with My Settings and User Permissions marked in red."></figure></li>
+      <li>Click <strong>Add New</strong> (box 3). Type their name and email, and choose the role <strong>Developer</strong>.
+        Keep <em>Administrator</em> for the owner: it also manages users and payments.
+        <figure><img src="img/amz-users.jpg" width="1397" height="386" loading="lazy"
+          alt="Amazon's User Permissions page with Add New marked in red."></figure></li>
+    </ol>
+
+    <h3>GitHub (the code)</h3>
+    <p>On the repository <code>thedisplaysolution-android</code>: <strong>Settings</strong> → <strong>Collaborators</strong> →
+      <strong>Add people</strong> → their GitHub name → role <strong>Write</strong>.</p>
+
+    <h3>The release key</h3>
+    <p>Hand over the <code>.jks</code> file and its passwords only to someone the owner trusts to sign releases, in person or
+      through a password manager, never by email or chat. Keep a backup of the key: if it is lost, no update can reach a TV that
+      installed the app from the website. On Google Play, the owner can ask Google to reset a lost upload key
+      (Play Console → Test and release → App integrity).</p>
+  </section>
+
+  <footer>
+    <p>The same steps in plain text are in <code>RELEASING.md</code> at the project's root. Screenshots taken on 2026-10-26.</p>
+  </footer>
+</main>
+</body>
+</html>

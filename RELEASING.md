@@ -3,6 +3,9 @@
 How to build a new version of the TV player and publish it to all three places it is sold or offered. The steps are
 written so that any developer who is given access (see **Access** at the end) can do a release without help.
 
+**The same steps with screenshots, a red box on everything to click: [`docs/release-guide/index.html`](docs/release-guide/index.html).**
+Open it in a browser.
+
 The app is `com.thedisplaysolution.player`. It is a WebView of `https://sign.thedisplaysolution.com/player`, so most
 changes to what a TV shows are made on the website and need no new app version at all. A new version is needed only for
 the Android side: the watchdog, the Back-hold menu, the updater, permissions, icons and the target SDK.
@@ -60,6 +63,9 @@ The files:
 
 - `app/build/outputs/apk/site/release/app-site-release.apk`, for the website and Amazon.
 - `app/build/outputs/bundle/playRelease/app-play-release.aab`, for Google Play.
+
+Android Studio's signing wizard writes the same two files inside the `app` folder instead; the **locate** link in its
+message at the bottom right opens that folder.
 
 Check the APK's signature and version:
 
