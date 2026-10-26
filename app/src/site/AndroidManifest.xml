@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The website build ("site" flavour: Developer > TV App on the website, and the Amazon Appstore), merged into
+     src/main/AndroidManifest.xml. It updates itself from the website (AppUpdater); a copy a store installed never does. -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Updates of the app itself (AppUpdater): Android still asks for a press on the TV, and once per TV for
+         "Install unknown apps". -->
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+
+    <application>
+        <!-- What Android's installer says about an update (AppUpdater): only its own PendingIntent reaches it. -->
+        <receiver
+            android:name=".InstallResultReceiver"
+            android:exported="false" />
+    </application>
+
+</manifest>

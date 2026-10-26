@@ -14,8 +14,11 @@
 .cxx
 local.properties
 
-# Built apps: they go to Developer > TV App (or a store), never into git.
+# Built apps: they go to Developer > TV App (or a store), never into git. Android Studio's signing wizard writes them
+# to app/release, or app/site/release and app/play/release for the two flavours.
 /app/release/
+/app/site/release/
+/app/play/release/
 *.apk
 *.aab
 # The release key and anything that names its passwords live outside the project (D:\Keys); never commit one.

@@ -1,6 +1,16 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
+}
+
+// The release key's place and passwords, from keystore.properties at the project's root (git-ignored; copy
+// keystore.properties.example). Without it a release build is left unsigned, and Android Studio's
+// Build > Generate Signed App Bundle or APK signs it instead. See RELEASING.md.
+val keystoreProperties = Properties().apply {
+    val file = rootProject.file("keystore.properties")
+    if (file.exists()) file.inputStream().use(::load)
 }
 
 android {
@@ -21,9 +31,35 @@ android {
         // The first release given to customers, signed with the release key (owner, 2026-10-20: "versioncode ko 1 kardo
         // aur version ko 1.0 kar do phir mein sub customer ko dena shuru karta hu"). The 1.0 to 1.2 before it were tried
         // on the owner's Fire Stick alone, to prove the in-app updater, and the 1.x builds before those were debug builds.
-        // Every update raises versionCode by one; Developer > TV App reads both.
+        // Every update raises versionCode by one; Developer > TV App, the Amazon Appstore and Google Play read both.
         versionCode = 1
         versionName = "1.0"
+    }
+
+    // Two builds of the one app (RELEASING.md): "site" for the website's Developer > TV App and the Amazon Appstore,
+    // which updates itself from the website, and "play" for Google Play, which has no updater of its own (Play lets no app
+    // update itself) and is for televisions alone. Both are com.thedisplaysolution.player, with the same version.
+    flavorDimensions += "store"
+    productFlavors {
+        create("site") {
+            dimension = "store"
+            buildConfigField("boolean", "SELF_UPDATE", "true")
+        }
+        create("play") {
+            dimension = "store"
+            buildConfigField("boolean", "SELF_UPDATE", "false")
+        }
+    }
+
+    signingConfigs {
+        if (keystoreProperties.isNotEmpty()) {
+            create("release") {
+                storeFile = file(keystoreProperties.getProperty("storeFile"))
+                storePassword = keystoreProperties.getProperty("storePassword")
+                keyAlias = keystoreProperties.getProperty("keyAlias")
+                keyPassword = keystoreProperties.getProperty("keyPassword")
+            }
+        }
     }
 
     buildTypes {
@@ -31,6 +67,7 @@ android {
             optimization {
                 enable = false
             }
+            if (keystoreProperties.isNotEmpty()) signingConfig = signingConfigs.getByName("release")
         }
     }
     compileOptions {
@@ -39,6 +76,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 

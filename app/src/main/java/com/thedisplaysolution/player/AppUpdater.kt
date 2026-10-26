@@ -28,7 +28,7 @@ import java.security.MessageDigest
  * handed to Android's PackageInstaller, which asks for one press on the TV — Android installs nothing without it. The
  * downloaded file is deleted the moment Android has its copy, and anything left from before when the player opens, so no
  * APK stays in the TV's storage. A copy a store installed (storeThatInstalled) is the store's to update, and none of this
- * runs for it.
+ * runs for it — nor for the Google Play build, which is always Google Play's (the "play" flavour, RELEASING.md).
  *
  * Everything here but the preferences runs off the main thread.
  */
@@ -63,9 +63,10 @@ object AppUpdater {
     private const val TIMEOUT_MS = 15_000
 
     /** The stores that update their own copies, by the installer package Android names, with the words for the TV. */
+    private const val PLAY_STORE = "com.android.vending"
     private val STORES = mapOf(
         "com.amazon.venezia" to "the Amazon Appstore",
-        "com.android.vending" to "Google Play",
+        PLAY_STORE to "Google Play",
     )
 
     /** What the server offers. */
@@ -287,6 +288,9 @@ object AppUpdater {
      * copy up to date anyway (owner, 2026-10-21: "Amazon khud kare"): such a copy never offers an update itself.
      */
     fun storeThatInstalled(context: Context): String? {
+        // The Google Play build (the "play" flavour) is Google Play's to update, however it was installed: Play lets no
+        // app update itself, and that build has neither this updater's permission nor its receiver (they are in src/site).
+        if (!BuildConfig.SELF_UPDATE) return STORES.getValue(PLAY_STORE)
         val installer = try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                 context.packageManager.getInstallSourceInfo(context.packageName).installingPackageName

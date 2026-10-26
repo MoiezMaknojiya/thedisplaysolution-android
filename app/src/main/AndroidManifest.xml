@@ -15,9 +15,8 @@
     <!-- "Display over other apps": from Android 10 on, the only way an app may bring itself back to the
          screen from the background. Granted once per TV, by hand; the Back-hold menu shows how. -->
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
-    <!-- Updates of the app itself (AppUpdater): Android still asks for a press on the TV, and once per TV for
-         "Install unknown apps". -->
-    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+    <!-- Updates of the app itself (AppUpdater) are the website build's alone: its permission and its receiver are in
+         src/site/AndroidManifest.xml. The Google Play build (src/play) has neither: Play lets no app update itself. -->
 
     <uses-feature
         android:name="android.hardware.touchscreen"
@@ -80,11 +79,6 @@
                 <action android:name="android.intent.action.QUICKBOOT_POWERON" />
             </intent-filter>
         </receiver>
-
-        <!-- What Android's installer says about an update (AppUpdater): only its own PendingIntent reaches it. -->
-        <receiver
-            android:name=".InstallResultReceiver"
-            android:exported="false" />
     </application>
 
 </manifest>

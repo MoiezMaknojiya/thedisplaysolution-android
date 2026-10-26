@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The Google Play build ("play" flavour), merged into src/main/AndroidManifest.xml. Google Play updates it, so it has no
+     updater of its own (Play lets no app update itself), and it is for televisions alone (owner, 2026-10-26: "Sirf TV"):
+     leanback required, so Play offers it to Android TV and Google TV and to no phone or tablet. -->
+<!-- Lint reads this file alone: the launcher's LEANBACK_LAUNCHER and the touchscreen marked optional are in
+     src/main/AndroidManifest.xml, which this is merged into. -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:ignore="MissingLeanbackLauncher,ImpliedTouchscreenHardware">
+
+    <uses-feature
+        android:name="android.software.leanback"
+        android:required="true"
+        tools:replace="android:required" />
+
+</manifest>
