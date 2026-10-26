@@ -89,7 +89,7 @@
       <table>
         <thead><tr><th>Build</th><th>Goes to</th><th>File</th><th>Updates itself?</th></tr></thead>
         <tbody>
-          <tr><td><code>playRelease</code></td><td>Google Play</td><td>AAB (<code>.aab</code>)</td><td>No. Google Play updates it.</td></tr>
+          <tr><td><code>playRelease</code></td><td>Google Play (Android TV and Google TV only)</td><td>AAB (<code>.aab</code>)</td><td>No. Google Play updates it.</td></tr>
           <tr><td><code>siteRelease</code></td><td>The website and the Amazon Appstore</td><td>APK (<code>.apk</code>)</td><td>Yes, from the website. A copy from the Amazon Appstore is updated by Amazon.</td></tr>
         </tbody>
       </table>
@@ -161,6 +161,24 @@ versionName = "1.1"    // what the TV and the stores show</code></pre>
       <li>Click <strong>locate</strong> in the message at the bottom right: the file is <code>app-site-release.apk</code>, inside the
         project's <code>app</code> folder. Upload this one file to the website (<a href="#website">step 5</a>) and to Amazon
         (<a href="#amazon">step 6</a>).</li>
+    </ol>
+  </section>
+
+  <section class="part" id="cli" aria-labelledby="cli-title">
+    <h2 id="cli-title">Optional: build both files from the command line</h2>
+    <p class="sub">The same two files without the wizard, for a developer who prefers a terminal.</p>
+    <ol class="steps">
+      <li>Copy <code>keystore.properties.example</code> to <code>keystore.properties</code> in the project's root and fill in the
+        key's path and passwords. Git ignores this file: never commit it.</li>
+      <li>Run, with Android Studio's own Java:
+<pre><code>set JAVA_HOME=C:\Program Files\Android\Android Studio\jbr
+gradlew lintSiteDebug lintPlayDebug assembleSiteRelease bundlePlayRelease</code></pre>
+        Lint must say <strong>0 errors</strong>. The files are <code>app\build\outputs\apk\site\release\app-site-release.apk</code>
+        and <code>app\build\outputs\bundle\playRelease\app-play-release.aab</code>.</li>
+      <li>Check the APK's signature: the signer must be <code>CN=The Display Solution</code>.
+<pre><code>%LOCALAPPDATA%\Android\Sdk\build-tools\36.0.0\apksigner verify --print-certs app\build\outputs\apk\site\release\app-site-release.apk</code></pre></li>
+      <li>Before uploading, try both builds on the Android TV emulator. Hold Back for five seconds to open the app's menu, then
+        press <strong>Check for updates</strong>. The site build asks the website. The play build says Google Play keeps it up to date.</li>
     </ol>
   </section>
 
@@ -266,7 +284,7 @@ versionName = "1.1"    // what the TV and the stores show</code></pre>
   </section>
 
   <footer>
-    <p>The same steps in plain text are in <code>RELEASING.md</code> at the project's root. Screenshots taken on 2026-10-26.</p>
+    <p>After a release, tag its commit (<code>git tag v1.1</code>) and keep the signed files outside git. Screenshots taken on 2026-10-26.</p>
   </footer>
 </main>
 </body>

@@ -28,7 +28,7 @@ import java.security.MessageDigest
  * handed to Android's PackageInstaller, which asks for one press on the TV — Android installs nothing without it. The
  * downloaded file is deleted the moment Android has its copy, and anything left from before when the player opens, so no
  * APK stays in the TV's storage. A copy a store installed (storeThatInstalled) is the store's to update, and none of this
- * runs for it — nor for the Google Play build, which is always Google Play's (the "play" flavour, RELEASING.md).
+ * runs for it — nor for the Google Play build, which is always Google Play's (the "play" flavour, docs/release-guide).
  *
  * Everything here but the preferences runs off the main thread.
  */

@@ -7,7 +7,7 @@ plugins {
 
 // The release key's place and passwords, from keystore.properties at the project's root (git-ignored; copy
 // keystore.properties.example). Without it a release build is left unsigned, and Android Studio's
-// Build > Generate Signed App Bundle or APK signs it instead. See RELEASING.md.
+// Build > Generate Signed App Bundle or APK signs it instead. See docs/release-guide/index.html.
 val keystoreProperties = Properties().apply {
     val file = rootProject.file("keystore.properties")
     if (file.exists()) file.inputStream().use(::load)
@@ -36,7 +36,7 @@ android {
         versionName = "1.0"
     }
 
-    // Two builds of the one app (RELEASING.md): "site" for the website's Developer > TV App and the Amazon Appstore,
+    // Two builds of the one app (docs/release-guide/index.html): "site" for the website's Developer > TV App and the Amazon Appstore,
     // which updates itself from the website, and "play" for Google Play, which has no updater of its own (Play lets no app
     // update itself) and is for televisions alone. Both are com.thedisplaysolution.player, with the same version.
     flavorDimensions += "store"
