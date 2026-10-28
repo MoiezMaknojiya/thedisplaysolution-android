@@ -166,12 +166,7 @@ class MainActivity : ComponentActivity() {
             DisplaySolutionPlayerTheme {
                 PlayerWebView(
                     url = PLAYER_URL,
-                    onCreated = {
-                        webView = it
-                        // Before the page loads, so its first playlist answer already finds the bridge: the page
-                        // tells the app which way the set is mounted and the app turns the display (SignagePlayerBridge).
-                        it.addJavascriptInterface(SignagePlayerBridge(this), "SignagePlayer")
-                    },
+                    onCreated = { webView = it },
                     onPageLoaded = ::onPageLoaded,
                     // The page's renderer died (usually out of memory on a cheap box). That WebView
                     // cannot be used again, so start over with a fresh activity and a fresh WebView.
