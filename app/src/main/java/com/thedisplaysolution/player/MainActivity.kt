@@ -158,11 +158,20 @@ class MainActivity : ComponentActivity() {
         // so a short press still never closes the player.
         onBackPressedDispatcher.addCallback(this) { }
 
+        // A debug build can be watched from a computer: chrome://inspect, or `adb forward tcp:9222
+        // localabstract:webview_devtools_remote_<pid>`. A release build never can.
+        WebView.setWebContentsDebuggingEnabled(BuildConfig.DEBUG)
+
         setContent {
             DisplaySolutionPlayerTheme {
                 PlayerWebView(
                     url = PLAYER_URL,
-                    onCreated = { webView = it },
+                    onCreated = {
+                        webView = it
+                        // Before the page loads, so its first playlist answer already finds the bridge: the page
+                        // tells the app which way the set is mounted and the app turns the display (SignagePlayerBridge).
+                        it.addJavascriptInterface(SignagePlayerBridge(this), "SignagePlayer")
+                    },
                     onPageLoaded = ::onPageLoaded,
                     // The page's renderer died (usually out of memory on a cheap box). That WebView
                     // cannot be used again, so start over with a fresh activity and a fresh WebView.
